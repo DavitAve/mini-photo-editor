@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700&family=Montserrat:wght@100;200;300;400;500;600;700&family=Open+Sans:wght@300;400;500;700&family=Roboto:wght@100;300;400;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+    #0F4C75
+    #3282B8
+
+    font-family: 'Lato', sans-serif;
+    font-family: 'Montserrat', sans-serif;
+    font-family: 'Open Sans', sans-serif;
+    font-family: 'Roboto', sans-serif;
+*/
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  color: #fff;
+}
+*,
+*:focus {
+  outline: none;
+}
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #181818;
+}
+
+.def-container {
+  width: 1200px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.tr-2 {
+  transition: all 0.2s ease-in-out, transform 0.1s;
+}
+.btn-ic {
+  cursor: pointer;
+}
+.btn-ic path {
+  color: #cccccc;
+  transition: all 0.2s ease;
+}
+.btn-ic:hover path {
+  color: #3282b8 !important;
+}
+.def-btn > label {
+  display: block;
+  position: relative;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+.def-btn:has(label) {
+  padding: 0;
+}
+.def-btn {
+  padding: 12px 20px;
+}
+.def-btn._disabled > * {
+  cursor: auto;
+}
+.def-btn._disabled,
+.def-btn._disabled:hover {
+  background: #666666;
+}
+.def-btn._disabled:active {
+  transform: scale(1);
+}
+
+.tooltip-cont {
+  top: 120%;
+}
+.tooltip-cont * {
+  color: #181818;
+}
+.tooltip-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.tooltip-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+}
+.tooltip-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+.tooltip-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.canvas-box {
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  background: #1b1b1b;
+}
+
+@media only screen and (max-width: 1200px) {
+  .def-container {
+    margin: 0 10px;
+  }
+}
