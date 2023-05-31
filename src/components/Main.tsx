@@ -2,34 +2,49 @@ import { FunctionComponent, useRef, ChangeEvent, useState } from "react";
 import FolderImg from "../assets/images/folder.png";
 import MainFunc from "./MainFunc";
 
-const canvasSize = 640;
+const canvasSize = 630;
 
 const Main: FunctionComponent = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [zoom, setZoom] = useState<number>(0);
+  const [rotate, setRotate] = useState<number>(0);
   const [fileName, setFileName] = useState<string>("New image");
   const [selectedImage, setSelectedImage] = useState<
     string | ArrayBuffer | null
   >(null);
 
-  const canvasUpd = (src: string | ArrayBuffer | null, zoom: number) => {
+  const canvasUpd = ({ ...args }) => {
     const img = new Image();
-    img.src = src?.toString() || "";
+    img.src = args.src?.toString() || "";
 
     const animateSizeChange = () => {
       const canvas = canvasRef.current;
       const context = canvas?.getContext("2d");
       const { w, h } = widthCond(img.width, img.height);
       if (canvas) {
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        context?.clearRect(0, 0, canvas.width, canvas.height);
+        context?.save();
       }
-      const x = ((canvas?.width || 0) - (w * zoom) / 100 - w) / 2;
-      const y = ((canvas?.height || 0) - (h * zoom) / 100 - h) / 2;
+      const x = ((canvas?.width || 0) - (w * args.zoom) / 100 - w) / 2;
+      const y = ((canvas?.height || 0) - (h * args.zoom) / 100 - h) / 2;
+      const rotate = args.rotate * (Math.PI / 180);
 
+      context?.translate(canvasSize / 2, canvasSize / 2);
+      context?.rotate(rotate);
+
+      context?.translate(-canvasSize / 2, -canvasSize / 2);
       context?.clearRect(0, 0, w, h);
-      context?.drawImage(img, x, y, w + (w * zoom) / 100, h + (h * zoom) / 100);
+
+      context?.drawImage(
+        img,
+        x,
+        y,
+        w + (w * args.zoom) / 100,
+        h + (h * args.zoom) / 100
+      );
     };
 
     img.onload = () => animateSizeChange();
@@ -80,7 +95,7 @@ const Main: FunctionComponent = () => {
     reader.onload = () => {
       setZoom(0);
       setSelectedImage(reader.result);
-      canvasUpd(reader.result, 0);
+      canvasUpd({ src: reader.result, zoom: 0 });
     };
   };
 
@@ -121,22 +136,38 @@ const Main: FunctionComponent = () => {
             image={selectedImage}
             onAction={mainAction}
           />
-          <div className="flex gap-6">
-            <div>Zoom {zoom}%</div>
-            <input
-              type="range"
-              className="flex-auto"
-              min="-90"
-              max="100"
-              value={zoom}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setZoom(val);
-                canvasUpd(selectedImage, val);
-              }}
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-6">
+              <div className="w-32">Zoom {zoom}%</div>
+              <input
+                type="range"
+                className="flex-auto"
+                min="-90"
+                max="100"
+                value={zoom}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setZoom(val);
+                  canvasUpd({ src: selectedImage, rotate: rotate, zoom: val });
+                }}
+              />
+            </div>
+            <div className="flex gap-6">
+              <div className="w-32">Rotate {rotate}deg</div>
+              <input
+                type="range"
+                className="flex-auto"
+                min="0"
+                max="180"
+                value={rotate}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setRotate(val);
+                  canvasUpd({ src: selectedImage, rotate: val, zoom: zoom });
+                }}
+              />
+            </div>
           </div>
-          <div></div>
         </div>
       </div>
     </div>
