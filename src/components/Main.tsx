@@ -1,14 +1,29 @@
 import { FunctionComponent, useRef, ChangeEvent, useState } from "react";
 import FolderImg from "../assets/images/folder.png";
 import MainFunc from "./MainFunc";
+import MainPanel from "./MainPanel";
+import MainFilters from "./MainFilters";
 
 const canvasSize = 630;
+
+interface IChanges {
+  [key: string]: number;
+}
 
 const Main: FunctionComponent = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [zoom, setZoom] = useState<number>(0);
-  const [rotate, setRotate] = useState<number>(0);
+  const [changes, setChanges] = useState<IChanges>({
+    zoom: 0,
+    rotate: 0,
+    blur: 0,
+    contr: 1,
+    brightness: 0,
+    saturate: 0,
+    grayscale: 0,
+    invert: 0,
+    sepia: 0,
+  });
   const [fileName, setFileName] = useState<string>("New image");
   const [selectedImage, setSelectedImage] = useState<
     string | ArrayBuffer | null
@@ -30,13 +45,19 @@ const Main: FunctionComponent = () => {
       }
       const x = ((canvas?.width || 0) - (w * args.zoom) / 100 - w) / 2;
       const y = ((canvas?.height || 0) - (h * args.zoom) / 100 - h) / 2;
-      const rotate = args.rotate * (Math.PI / 180);
 
       context?.translate(canvasSize / 2, canvasSize / 2);
-      context?.rotate(rotate);
-
+      context?.rotate(args.rotate * (Math.PI / 180));
       context?.translate(-canvasSize / 2, -canvasSize / 2);
       context?.clearRect(0, 0, w, h);
+      if (context)
+        context.filter = `blur(${args.blur}px) contrast(${
+          args.contr || 1
+        }) brightness(${args.brightness || 1}) saturate(${
+          args.saturate || 1
+        }) grayscale(${args.grayscale}) invert(${args.invert}) sepia(${
+          args.sepia
+        })`;
 
       context?.drawImage(
         img,
@@ -54,14 +75,23 @@ const Main: FunctionComponent = () => {
     type: string,
     event: ChangeEvent<HTMLInputElement> | undefined
   ) => {
-    if (type === "delete") setSelectedImage(null);
-    else if (type === "download") handleDownload();
+    if (type === "delete") {
+      setSelectedImage(null);
+      nulledChng();
+    } else if (type === "download") handleDownload();
     else if (type === "upload" && event) handleUpload(event);
   };
 
+  const nulledChng = () => {
+    setChanges((prev) => {
+      Object.keys(prev).forEach((key) => (prev[key] = 0));
+      return prev;
+    });
+  };
+
   const widthCond = (w: number, h: number) => {
-    if (w < 300 && h < 300) return { w: w * 2, h: h * 2 };
-    else if (w > canvasSize || h > canvasSize) {
+    // if (w < 300 && h < 300) return { w: w * 2, h: h * 2 };
+    if (w > canvasSize || h > canvasSize) {
       if (h > w) {
         const perc = ((h - w) / h) * 100;
         const newW = canvasSize - (canvasSize * perc) / 100;
@@ -89,20 +119,40 @@ const Main: FunctionComponent = () => {
   const handleUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
     const reader = new FileReader();
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+    if (file) reader.readAsDataURL(file);
+
     reader.onload = () => {
-      setZoom(0);
+      nulledChng();
       setSelectedImage(reader.result);
       canvasUpd({ src: reader.result, zoom: 0 });
     };
   };
 
+  const handleSetChanges = (key: string, value: number | boolean) => {
+    const change = (value: number) => {
+      canvasUpd({
+        ...changes,
+        src: selectedImage,
+        [key]: value,
+      });
+    };
+
+    if (typeof value === "number") {
+      setChanges((prev) => ({ ...prev, [key]: value }));
+      change(value);
+    } else {
+      setChanges((prev) => ({ ...prev, [key]: value ? 1 : 0 }));
+      change(value ? 1 : 0);
+    }
+  };
+
   return (
     <div className="def-container">
       <div className="flex flex-col items-center py-3">
-        <div className="flex flex-col canvas-box">
+        <div className="relative w-[640px] flex flex-col canvas-box">
+          <div className="absolute right-[-160px] top-0">
+            <MainFilters changes={changes} onAction={handleSetChanges} />
+          </div>
           <div className="flex items-center">
             <span>File name: </span>
             <input
@@ -136,38 +186,11 @@ const Main: FunctionComponent = () => {
             image={selectedImage}
             onAction={mainAction}
           />
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-6">
-              <div className="w-32">Zoom {zoom}%</div>
-              <input
-                type="range"
-                className="flex-auto"
-                min="-90"
-                max="100"
-                value={zoom}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setZoom(val);
-                  canvasUpd({ src: selectedImage, rotate: rotate, zoom: val });
-                }}
-              />
-            </div>
-            <div className="flex gap-6">
-              <div className="w-32">Rotate {rotate}deg</div>
-              <input
-                type="range"
-                className="flex-auto"
-                min="0"
-                max="180"
-                value={rotate}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setRotate(val);
-                  canvasUpd({ src: selectedImage, rotate: val, zoom: zoom });
-                }}
-              />
-            </div>
-          </div>
+          <MainPanel
+            changes={changes}
+            onAction={handleSetChanges}
+            disabled={!!selectedImage}
+          />
         </div>
       </div>
     </div>
