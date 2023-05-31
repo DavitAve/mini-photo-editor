@@ -36,7 +36,6 @@
   max-width: 100%;
   margin: 0 auto;
 }
-
 .tr-2 {
   transition: all 0.2s ease-in-out, transform 0.1s;
 }
@@ -73,9 +72,6 @@
   transform: scale(1);
 }
 
-.tooltip-cont {
-  top: 120%;
-}
 .tooltip-cont * {
   color: #181818;
 }

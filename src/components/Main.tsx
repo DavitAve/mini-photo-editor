@@ -1,10 +1,4 @@
-import {
-  FunctionComponent,
-  useRef,
-  useEffect,
-  ChangeEvent,
-  useState,
-} from "react";
+import { FunctionComponent, useRef, ChangeEvent, useState } from "react";
 import FolderImg from "../assets/images/folder.png";
 import MainFunc from "./MainFunc";
 
@@ -18,31 +12,27 @@ const Main: FunctionComponent = () => {
   const [selectedImage, setSelectedImage] = useState<
     string | ArrayBuffer | null
   >(null);
-  const canvas = canvasRef.current;
-  const context = canvas?.getContext("2d");
 
-  const canvasUpd = (image: string | ArrayBuffer | null) => {
+  const canvasUpd = (src: string | ArrayBuffer | null, zoom: number) => {
     const img = new Image();
-    let requestId = 0;
-    img.src = image as string;
+    img.src = src?.toString() || "";
+
     const animateSizeChange = () => {
+      const canvas = canvasRef.current;
+      const context = canvas?.getContext("2d");
       const { w, h } = widthCond(img.width, img.height);
+      if (canvas) {
+        canvas.width = w;
+        canvas.height = h;
+      }
       const x = ((canvas?.width || 0) - (w * zoom) / 100 - w) / 2;
       const y = ((canvas?.height || 0) - (h * zoom) / 100 - h) / 2;
+
       context?.clearRect(0, 0, w, h);
       context?.drawImage(img, x, y, w + (w * zoom) / 100, h + (h * zoom) / 100);
-      requestId = requestAnimationFrame(animateSizeChange);
-    };
-    img.onload = async () => {
-      animateSizeChange();
     };
 
-    if (canvas) {
-      const { w, h } = widthCond(img.width, img.height);
-      canvas.width = w;
-      canvas.height = h;
-    }
-    cancelAnimationFrame(requestId);
+    img.onload = () => animateSizeChange();
   };
 
   const mainAction = (
@@ -82,20 +72,17 @@ const Main: FunctionComponent = () => {
   };
 
   const handleUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event?.target?.files[0];
+    const file = event.target.files && event.target.files[0];
     const reader = new FileReader();
-
-    if (file) reader.readAsDataURL(file);
-
+    if (file) {
+      reader.readAsDataURL(file);
+    }
     reader.onload = () => {
-      canvasUpd(reader.result);
+      setZoom(0);
       setSelectedImage(reader.result);
+      canvasUpd(reader.result, 0);
     };
   };
-
-  useEffect(() => {
-    canvasUpd(selectedImage);
-  }, [selectedImage, zoom]);
 
   return (
     <div className="def-container">
@@ -124,7 +111,7 @@ const Main: FunctionComponent = () => {
                 <div className="text-center">Choose image</div>
               </div>
             ) : (
-              <canvas ref={canvasRef} className="transition-all" />
+              <canvas ref={canvasRef} />
             )}
           </div>
         </div>
@@ -135,18 +122,21 @@ const Main: FunctionComponent = () => {
             onAction={mainAction}
           />
           <div className="flex gap-6">
-            <div>Zoom</div>
+            <div>Zoom {zoom}%</div>
             <input
-              defaultValue={0}
               type="range"
               className="flex-auto"
               min="-90"
               max="100"
+              value={zoom}
               onChange={(e) => {
-                setZoom(Number(e.target.value));
+                const val = Number(e.target.value);
+                setZoom(val);
+                canvasUpd(selectedImage, val);
               }}
             />
           </div>
+          <div></div>
         </div>
       </div>
     </div>

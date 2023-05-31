@@ -47,6 +47,7 @@ const MainFunc: FunctionComponent<IMainFuncProps> = ({
               ref={fileRef}
               id="imageUpl"
               type="file"
+              accept="image/*"
               className="hidden"
               onChange={(event) => onAction("upload", event)}
             />

@@ -54,7 +54,7 @@ const Tooltip: FunctionComponent<ITooltipProps> = ({
           classNames="tooltip"
           unmountOnExit
         >
-          <div className="tooltip-cont absolute p-4 bg-[#fff] rounded-md z-20 w-max">
+          <div className="tooltip-cont top-[120%] absolute p-4 bg-[#fff] rounded-md z-20 w-max">
             <div className="cont">{contentElem}</div>
           </div>
         </CSSTransition>
