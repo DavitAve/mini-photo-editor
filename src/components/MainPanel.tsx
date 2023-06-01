@@ -3,11 +3,10 @@ import MainRange from "./MainRange";
 import { minMax } from "../utils/constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { IChanges } from "../interfaces/main";
 
 interface IMainPanelProps {
-  changes: {
-    [key: string]: number;
-  };
+  changes: IChanges;
   disabled: boolean;
   onAction: (key: string, value: number) => void;
 }
@@ -44,8 +43,8 @@ const MainPanel: FunctionComponent<IMainPanelProps> = ({
           </button>
         </div>
         <div
-          className={`flex flex-col gap-4 overflow-hidden tr-2 ${
-            show ? "h-[223px]" : "h-0"
+          className={`flex flex-col p-3 gap-4 overflow-hidden tr-2 bg-[#1b1b1b] ${
+            show ? "h-[260px]" : "h-0 py-0"
           }`}
         >
           {Object.entries(changes).map(([key, item], index) => {

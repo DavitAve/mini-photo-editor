@@ -1,10 +1,9 @@
 import { FunctionComponent } from "react";
 import Toggle from "./UI/Toggle";
+import { IChanges } from "../interfaces/main";
 
 interface IMainFiltersProps {
-  changes: {
-    [key: string]: number;
-  };
+  changes: IChanges;
   onAction: (key: string, value: boolean) => void;
 }
 
@@ -15,17 +14,21 @@ const MainFilters: FunctionComponent<IMainFiltersProps> = ({
   onAction,
 }) => {
   return (
-    <div className="flex flex-col gap-3">
-      {Object.keys(changes).map((key, index) => {
-        if (visiableKeys.includes(key))
-          return (
-            <Toggle
-              key={index}
-              label={key}
-              onChange={(value) => onAction(key, value)}
-            />
-          );
-      })}
+    <div className="flex flex-col gap-4">
+      <span className="text-3xl">Filters</span>
+      <div className="flex flex-col gap-3">
+        {Object.keys(changes).map((key, index) => {
+          if (visiableKeys.includes(key))
+            return (
+              <Toggle
+                value={!!changes[key as keyof IChanges]}
+                key={index}
+                label={key}
+                onChange={(value) => onAction(key, value)}
+              />
+            );
+        })}
+      </div>
     </div>
   );
 };

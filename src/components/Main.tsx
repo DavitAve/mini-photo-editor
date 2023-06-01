@@ -1,19 +1,24 @@
-import { FunctionComponent, useRef, ChangeEvent, useState } from "react";
+import {
+  FunctionComponent,
+  useRef,
+  ChangeEvent,
+  useState,
+  useLayoutEffect,
+} from "react";
 import FolderImg from "../assets/images/folder.png";
 import MainFunc from "./MainFunc";
 import MainPanel from "./MainPanel";
 import MainFilters from "./MainFilters";
+import useHistoryState from "../hooks/useHistoryState";
+import { IChanges } from "../interfaces/main";
+import MainUnRe from "./MainUnRe";
 
 const canvasSize = 630;
-
-interface IChanges {
-  [key: string]: number;
-}
 
 const Main: FunctionComponent = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [changes, setChanges] = useState<IChanges>({
+  const [changes, setChanges, undo, redo] = useHistoryState<IChanges>({
     zoom: 0,
     rotate: 0,
     blur: 0,
@@ -84,7 +89,7 @@ const Main: FunctionComponent = () => {
 
   const nulledChng = () => {
     setChanges((prev) => {
-      Object.keys(prev).forEach((key) => (prev[key] = 0));
+      Object.keys(prev).forEach((key) => (prev[key as keyof IChanges] = 0));
       return prev;
     });
   };
@@ -146,12 +151,41 @@ const Main: FunctionComponent = () => {
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    const key = e.key.toLocaleLowerCase();
+    if (key === "z" && e.ctrlKey) {
+      handleRest("undo");
+    } else if (e.ctrlKey && key === "b") {
+      handleRest("redo");
+    }
+  };
+  const handleRest = (type: string) => {
+    if (type === "undo") {
+      const [data, act] = undo();
+      act();
+      canvasUpd({ src: selectedImage, ...changes, ...data });
+    } else {
+      const [data, act] = redo();
+      act();
+      canvasUpd({ src: selectedImage, ...changes, ...data });
+    }
+  };
+
+  useLayoutEffect(() => {
+    window.onkeydown = (e) => {
+      handleKeyDown(e);
+    };
+  }, [changes]);
+
   return (
     <div className="def-container">
       <div className="flex flex-col items-center py-3">
         <div className="relative w-[640px] flex flex-col canvas-box">
           <div className="absolute right-[-160px] top-0">
             <MainFilters changes={changes} onAction={handleSetChanges} />
+          </div>
+          <div className="absolute left-[-140px] top-0">
+            <MainUnRe onAction={handleRest} />
           </div>
           <div className="flex items-center">
             <span>File name: </span>

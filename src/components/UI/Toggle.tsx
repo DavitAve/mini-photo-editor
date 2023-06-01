@@ -1,17 +1,23 @@
 import { FunctionComponent, useEffect, useState } from "react";
 
 interface IToggleProps {
+  value?: boolean;
   label?: string;
   defaultChecked?: boolean;
   onChange?: (value: boolean) => void;
 }
 
 const Toggle: FunctionComponent<IToggleProps> = ({
+  value = false,
   defaultChecked = false,
   label = "",
   onChange,
 }) => {
   const [active, setActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    setActive(value);
+  }, [value]);
 
   useEffect(() => {
     setActive(defaultChecked);
