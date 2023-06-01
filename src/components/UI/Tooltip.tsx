@@ -9,11 +9,14 @@ import { CSSTransition } from "react-transition-group";
 
 interface ITooltipProps {
   side?: "left" | "right" | "top" | "bottom";
+  disabled?: boolean;
+  withDis?: boolean;
   children?: ReactNode[];
 }
 
 const Tooltip: FunctionComponent<ITooltipProps> = ({
-  side = "left",
+  disabled = false,
+  withDis = false,
   children,
 }) => {
   const [onElement, setOnElement] = useState<ReactElement>();
@@ -38,8 +41,8 @@ const Tooltip: FunctionComponent<ITooltipProps> = ({
     <div className="tooltip">
       <div
         className="relative tooltip-body"
-        onMouseEnter={() => handleShow(true)}
-        onMouseLeave={() => handleShow(false)}
+        onMouseEnter={() => !disabled && handleShow(true)}
+        onMouseLeave={() => !disabled && handleShow(false)}
       >
         {onElement}
         {active && (
@@ -49,7 +52,7 @@ const Tooltip: FunctionComponent<ITooltipProps> = ({
         )}
 
         <CSSTransition
-          in={active}
+          in={withDis ? !disabled && active : active}
           timeout={200}
           classNames="tooltip"
           unmountOnExit

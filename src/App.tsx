@@ -1,9 +1,12 @@
+import { ContextProvider } from "./components/Context";
 import Main from "./components/Main";
 
 const App = () => {
   return (
     <>
-      <Main />
+      <ContextProvider>
+        <Main />
+      </ContextProvider>
     </>
   );
 };

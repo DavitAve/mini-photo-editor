@@ -1,6 +1,7 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useContext } from "react";
 import Toggle from "./UI/Toggle";
 import { IChanges } from "../interfaces/main";
+import Context from "./Context";
 
 interface IMainFiltersProps {
   changes: IChanges;
@@ -13,6 +14,9 @@ const MainFilters: FunctionComponent<IMainFiltersProps> = ({
   changes,
   onAction,
 }) => {
+  const context = useContext(Context);
+  const { selectedImg } = context || {};
+
   return (
     <div className="flex flex-col gap-4">
       <span className="text-3xl">Filters</span>
@@ -21,6 +25,7 @@ const MainFilters: FunctionComponent<IMainFiltersProps> = ({
           if (visiableKeys.includes(key))
             return (
               <Toggle
+                disabled={!!!selectedImg}
                 value={!!changes[key as keyof IChanges]}
                 key={index}
                 label={key}

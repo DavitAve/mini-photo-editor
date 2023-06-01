@@ -4,18 +4,22 @@ import {
   ChangeEvent,
   useState,
   useLayoutEffect,
+  useContext,
 } from "react";
+import useHistoryState from "../hooks/useHistoryState";
+import { IChanges } from "../interfaces/main";
 import FolderImg from "../assets/images/folder.png";
 import MainFunc from "./MainFunc";
 import MainPanel from "./MainPanel";
 import MainFilters from "./MainFilters";
-import useHistoryState from "../hooks/useHistoryState";
-import { IChanges } from "../interfaces/main";
 import MainUnRe from "./MainUnRe";
+import Context from "./Context";
 
 const canvasSize = 630;
 
 const Main: FunctionComponent = () => {
+  const context = useContext(Context);
+  const { selectedImg, setSelectedImg } = context || {};
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [changes, setChanges, undo, redo] = useHistoryState<IChanges>({
@@ -30,9 +34,6 @@ const Main: FunctionComponent = () => {
     sepia: 0,
   });
   const [fileName, setFileName] = useState<string>("New image");
-  const [selectedImage, setSelectedImage] = useState<
-    string | ArrayBuffer | null
-  >(null);
 
   const canvasUpd = ({ ...args }) => {
     const img = new Image();
@@ -81,7 +82,7 @@ const Main: FunctionComponent = () => {
     event: ChangeEvent<HTMLInputElement> | undefined
   ) => {
     if (type === "delete") {
-      setSelectedImage(null);
+      setSelectedImg && setSelectedImg(null);
       nulledChng();
     } else if (type === "download") handleDownload();
     else if (type === "upload" && event) handleUpload(event);
@@ -128,7 +129,7 @@ const Main: FunctionComponent = () => {
 
     reader.onload = () => {
       nulledChng();
-      setSelectedImage(reader.result);
+      setSelectedImg && setSelectedImg(reader.result);
       canvasUpd({ src: reader.result, zoom: 0 });
     };
   };
@@ -137,7 +138,7 @@ const Main: FunctionComponent = () => {
     const change = (value: number) => {
       canvasUpd({
         ...changes,
-        src: selectedImage,
+        src: selectedImg,
         [key]: value,
       });
     };
@@ -163,11 +164,11 @@ const Main: FunctionComponent = () => {
     if (type === "undo") {
       const [data, act] = undo();
       act();
-      canvasUpd({ src: selectedImage, ...changes, ...data });
+      canvasUpd({ src: selectedImg, ...changes, ...data });
     } else {
       const [data, act] = redo();
       act();
-      canvasUpd({ src: selectedImage, ...changes, ...data });
+      canvasUpd({ src: selectedImg, ...changes, ...data });
     }
   };
 
@@ -184,7 +185,7 @@ const Main: FunctionComponent = () => {
           <div className="absolute right-[-160px] top-0">
             <MainFilters changes={changes} onAction={handleSetChanges} />
           </div>
-          <div className="absolute left-[-140px] top-0">
+          <div className="flex justify-end">
             <MainUnRe onAction={handleRest} />
           </div>
           <div className="flex items-center">
@@ -197,7 +198,7 @@ const Main: FunctionComponent = () => {
             />
           </div>
           <div className="w-[640px] h-[640px] flex items-center justify-center">
-            {!selectedImage ? (
+            {!selectedImg ? (
               <div
                 className="flex flex-col justify-center cursor-pointer"
                 onClick={() => {
@@ -217,13 +218,13 @@ const Main: FunctionComponent = () => {
         <div className="w-[640px] py-4">
           <MainFunc
             fileRef={fileRef}
-            image={selectedImage}
+            image={selectedImg || null}
             onAction={mainAction}
           />
           <MainPanel
             changes={changes}
             onAction={handleSetChanges}
-            disabled={!!selectedImage}
+            disabled={!!selectedImg}
           />
         </div>
       </div>

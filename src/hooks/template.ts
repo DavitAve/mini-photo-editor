@@ -41,7 +41,6 @@ const useStateHistory: <T>(
 
   const undo: () => void = useCallback(() => {
     if (pointer <= 0) return;
-    console.log("aaa");
 
     _setState(history[pointer - 1]);
     setPointer((prev) => prev - 1);

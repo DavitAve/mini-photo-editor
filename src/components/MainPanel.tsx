@@ -29,8 +29,8 @@ const MainPanel: FunctionComponent<IMainPanelProps> = ({
 
   return (
     <>
-      <div className="w-[640px] py-4">
-        <div className="pb-4">
+      <div className="w-[640px] py-4 canvas-box">
+        <div className="pb-4 px-3">
           <button
             className="text-3xl w-full flex justify-between items-center"
             onClick={() => setShow(!show)}
