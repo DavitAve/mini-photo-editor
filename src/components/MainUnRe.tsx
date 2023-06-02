@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext } from "react";
+import { FunctionComponent, useContext, ChangeEvent } from "react";
 import Button from "./UI/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,14 +8,23 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Tooltip from "./UI/Tooltip";
 import Context from "./Context";
+import useUploadFile from "../hooks/useUploadFile";
 
 interface IMainUnReProps {
-  onAction: (type: string) => void;
+  onAction: (type: string, file?: string | ArrayBuffer) => void;
 }
 
 const MainUnRe: FunctionComponent<IMainUnReProps> = ({ onAction }) => {
   const context = useContext(Context);
   const { selectedImg } = context || {};
+  const { action: uploadImage } = useUploadFile();
+
+  const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    uploadImage(e).then((file) => {
+      file && onAction("add", file);
+    });
+  };
+
   return (
     <div className="flex items-center gap-3">
       <Tooltip disabled={!!!selectedImg} withDis={true}>
@@ -45,7 +54,16 @@ const MainUnRe: FunctionComponent<IMainUnReProps> = ({ onAction }) => {
           onClick={() => onAction("redo")}
           data-on
         >
-          <FontAwesomeIcon icon={faCamera} />
+          <label className="leading-none">
+            <FontAwesomeIcon icon={faCamera} />
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              disabled={!!!selectedImg}
+              onChange={handleUpload}
+            />
+          </label>
         </Button>
       </Tooltip>
     </div>

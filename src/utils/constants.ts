@@ -38,3 +38,15 @@ export const minMax: IMinMax = {
     ic: "%",
   },
 };
+
+export const numberKeys: string[] = [
+  "zoom",
+  "rotate",
+  "blur",
+  "contr",
+  "brightness",
+  "saturate",
+  "grayscale",
+  "invert",
+  "sepia",
+];

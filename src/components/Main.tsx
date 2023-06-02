@@ -7,13 +7,15 @@ import {
   useContext,
 } from "react";
 import useHistoryState from "../hooks/useHistoryState";
-import { IChanges } from "../interfaces/main";
+import { FileT, IChanges } from "../interfaces/main";
 import FolderImg from "../assets/images/folder.png";
 import MainFunc from "./MainFunc";
 import MainPanel from "./MainPanel";
 import MainFilters from "./MainFilters";
 import MainUnRe from "./MainUnRe";
 import Context from "./Context";
+import { numberKeys } from "../utils/constants";
+import useUploadFile from "../hooks/useUploadFile";
 
 const canvasSize = 630;
 
@@ -32,31 +34,53 @@ const Main: FunctionComponent = () => {
     grayscale: 0,
     invert: 0,
     sepia: 0,
+    images: [],
   });
+  const { action: uploadImage } = useUploadFile();
   const [fileName, setFileName] = useState<string>("New image");
 
   const canvasUpd = ({ ...args }) => {
     const img = new Image();
     img.src = args.src?.toString() || "";
+    const images: any[] = [];
+
+    args.images?.forEach((item: any) => {
+      const img = new Image();
+      img.src = item.toString() || "";
+      images.push(img);
+    });
 
     const animateSizeChange = () => {
       const canvas = canvasRef.current;
       const context = canvas?.getContext("2d");
       const { w, h } = widthCond(img.width, img.height);
+
+      const zoomedW = w + (w * args.zoom) / 100;
+      const zoomedH = h + (h * args.zoom) / 100;
+
       if (canvas) {
-        canvas.width = canvasSize;
-        canvas.height = canvasSize;
+        if (!args.rotate) {
+          canvas.width = zoomedW < 640 ? zoomedW : 640;
+          canvas.height = zoomedH < 640 ? zoomedH : 640;
+        } else {
+          const c = Math.sqrt(zoomedW ** 2 + zoomedH ** 2);
+          canvas.width = c < 640 ? c : 640;
+          canvas.height = c < 640 ? c : 640;
+        }
         context?.clearRect(0, 0, canvas.width, canvas.height);
         context?.save();
       }
       const x = ((canvas?.width || 0) - (w * args.zoom) / 100 - w) / 2;
       const y = ((canvas?.height || 0) - (h * args.zoom) / 100 - h) / 2;
 
-      context?.translate(canvasSize / 2, canvasSize / 2);
-      context?.rotate(args.rotate * (Math.PI / 180));
-      context?.translate(-canvasSize / 2, -canvasSize / 2);
+      if (canvas) {
+        context?.translate(canvas.width / 2, canvas.height / 2);
+        context?.rotate(args.rotate * (Math.PI / 180));
+        context?.translate(-canvas.width / 2, -canvas.height / 2);
+      }
+
       context?.clearRect(0, 0, w, h);
-      if (context)
+      if (context) {
         context.filter = `blur(${args.blur}px) contrast(${
           args.contr || 1
         }) brightness(${args.brightness || 1}) saturate(${
@@ -64,14 +88,13 @@ const Main: FunctionComponent = () => {
         }) grayscale(${args.grayscale}) invert(${args.invert}) sepia(${
           args.sepia
         })`;
-
-      context?.drawImage(
-        img,
-        x,
-        y,
-        w + (w * args.zoom) / 100,
-        h + (h * args.zoom) / 100
-      );
+      }
+      context?.drawImage(img, x, y, zoomedW, zoomedH);
+      if (images.length) {
+        images.forEach((img, index) => {
+          context?.drawImage(img, index * 100, 0, 100, 100);
+        });
+      }
     };
 
     img.onload = () => animateSizeChange();
@@ -89,8 +112,13 @@ const Main: FunctionComponent = () => {
   };
 
   const nulledChng = () => {
-    setChanges((prev) => {
-      Object.keys(prev).forEach((key) => (prev[key as keyof IChanges] = 0));
+    setChanges((prev: any) => {
+      numberKeys.forEach((key) => {
+        if (!Number.isNaN(prev[key])) prev[key] = 0;
+        else {
+          prev[key] = [];
+        }
+      });
       return prev;
     });
   };
@@ -123,15 +151,10 @@ const Main: FunctionComponent = () => {
   };
 
   const handleUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0];
-    const reader = new FileReader();
-    if (file) reader.readAsDataURL(file);
-
-    reader.onload = () => {
-      nulledChng();
-      setSelectedImg && setSelectedImg(reader.result);
-      canvasUpd({ src: reader.result, zoom: 0 });
-    };
+    uploadImage(event).then((file) => {
+      setSelectedImg && file && setSelectedImg(file);
+      canvasUpd({ src: file, zoom: 0 });
+    });
   };
 
   const handleSetChanges = (key: string, value: number | boolean) => {
@@ -160,15 +183,24 @@ const Main: FunctionComponent = () => {
       handleRest("redo");
     }
   };
-  const handleRest = (type: string) => {
+  const handleRest = (type: string, file?: FileT) => {
     if (type === "undo") {
-      const [data, act] = undo();
-      act();
+      const [data, action] = undo();
+      action();
       canvasUpd({ src: selectedImg, ...changes, ...data });
-    } else {
-      const [data, act] = redo();
-      act();
+    } else if (type === "redo") {
+      const [data, action] = redo();
+      action();
       canvasUpd({ src: selectedImg, ...changes, ...data });
+    } else if (type === "add" && file) {
+      setChanges((prev) => {
+        const data = {
+          ...prev,
+          images: [...prev.images, file] as ArrayBuffer[],
+        };
+        canvasUpd({ src: selectedImg, ...data });
+        return data;
+      });
     }
   };
 
