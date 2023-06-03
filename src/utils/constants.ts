@@ -1,3 +1,5 @@
+import { ISelectOption } from "../interfaces/main";
+
 interface IMinMax {
   [key: string]: {
     min: number;
@@ -49,4 +51,15 @@ export const numberKeys: string[] = [
   "grayscale",
   "invert",
   "sepia",
+];
+
+export const fileTypes: ISelectOption[] = [
+  {
+    label: "PNG",
+    value: "png",
+  },
+  {
+    label: "JPG",
+    value: "jpg",
+  },
 ];

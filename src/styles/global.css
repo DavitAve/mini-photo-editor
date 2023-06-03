@@ -108,7 +108,9 @@ input,
 .dialog-ic path {
   fill: #838383;
 }
-
+.dark-ic path {
+  fill: #181818;
+}
 @media only screen and (max-width: 1200px) {
   .def-container {
     margin: 0 10px;

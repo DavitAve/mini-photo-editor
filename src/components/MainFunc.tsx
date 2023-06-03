@@ -41,7 +41,7 @@ const MainFunc: FunctionComponent<IMainFuncProps> = ({
         )}
         <Button>
           <label htmlFor="imageUpl">
-            Upload image
+            {image ? "Change image" : "Upload image"}
             <FontAwesomeIcon className="ml-2" icon={faUpload} />
             <input
               ref={fileRef}
