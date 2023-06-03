@@ -11,7 +11,7 @@ type ReturnValueType<T> = [
 
 type UndoT<T> = [T, () => void];
 
-const useHistoryState: <T>(initialState: T) => ReturnValueType<T> = <T,>(
+const useHistoryState: <T>(initialState: T) => ReturnValueType<T> = <T>(
   initialState: T
 ) => {
   const [state, _setState] = useState<T>(initialState);

@@ -8,4 +8,7 @@ export interface IChanges {
   grayscale: number;
   invert: number;
   sepia: number;
+  images: FileT;
 }
+
+export type FileT = string | ArrayBuffer | null;

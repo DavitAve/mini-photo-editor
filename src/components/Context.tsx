@@ -1,8 +1,9 @@
 import { useState, createContext, FunctionComponent, ReactNode } from "react";
+import { FileT } from "../interfaces/main";
 
 export interface IContextValue {
-  selectedImg?: string | ArrayBuffer | null;
-  setSelectedImg?: (newValue: string | ArrayBuffer | null) => void;
+  selectedImg?: FileT;
+  setSelectedImg?: (newValue: FileT) => void;
 }
 
 const Context = createContext<IContextValue | undefined>(undefined);
@@ -10,9 +11,7 @@ const Context = createContext<IContextValue | undefined>(undefined);
 export const ContextProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [selectedImg, setSelectedImg] = useState<string | ArrayBuffer | null>(
-    null
-  );
+  const [selectedImg, setSelectedImg] = useState<FileT>(null);
   const contextValue: IContextValue = {
     selectedImg,
     setSelectedImg,

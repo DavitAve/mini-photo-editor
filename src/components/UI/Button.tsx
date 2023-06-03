@@ -3,12 +3,14 @@ import { FunctionComponent, ReactNode } from "react";
 interface IButtonProps {
   children?: ReactNode;
   disabled?: boolean;
+  className?: string;
   onClick?: () => void;
 }
 
 const Button: FunctionComponent<IButtonProps> = ({
   children,
   disabled = false,
+  className = "",
   onClick,
 }) => {
   return (
@@ -20,7 +22,7 @@ const Button: FunctionComponent<IButtonProps> = ({
           typeof children === "string" ? "py-3 px-5" : ""
         } ${
           disabled ? "_disabled" : ""
-        } bg-[#0F4C75] tr-2 hover:bg-[#3282B8] active:scale-95 text-lg rounded-lg`}
+        } bg-[#0F4C75] tr-2 hover:bg-[#3282B8] active:scale-95 text-lg rounded-lg ${className}`}
       >
         {children}
       </button>

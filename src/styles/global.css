@@ -30,7 +30,8 @@
   flex-direction: column;
   background: #181818;
 }
-input  {
+input,
+.tooltip-cont * {
   color: #181818;
 }
 .def-container {
@@ -40,6 +41,9 @@ input  {
 }
 .tr-2 {
   transition: all 0.2s ease-in-out, transform 0.1s;
+}
+.tr-5 {
+  transition: all 0.5s ease-in-out;
 }
 .btn-ic {
   cursor: pointer;
@@ -63,6 +67,9 @@ input  {
 .def-btn {
   padding: 12px 20px;
 }
+.def-btn * {
+  cursor: pointer;
+}
 .def-btn._disabled > * {
   cursor: auto;
 }
@@ -74,9 +81,6 @@ input  {
   transform: scale(1);
 }
 
-.tooltip-cont * {
-  color: #181818;
-}
 .tooltip-enter {
   opacity: 0;
   transform: translateY(-10px);
@@ -100,6 +104,9 @@ input  {
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
     rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
   background: #1b1b1b;
+}
+.dialog-ic path {
+  fill: #838383;
 }
 
 @media only screen and (max-width: 1200px) {
