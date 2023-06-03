@@ -95,15 +95,8 @@ const Main: FunctionComponent = () => {
         })`;
       }
       context?.drawImage(img, x, y, zoomedW, zoomedH);
-      const { w: minW, h: minH } = widthCond(minImg.width, minImg.height);
       minImgCond &&
-        context?.drawImage(
-          minImg,
-          args.mousePos.x,
-          args.mousePos.y,
-          minW / 3,
-          minH / 3
-        );
+        context?.drawImage(minImg, mousePosition.x, mousePosition.y, 100, 100);
     };
 
     img.onload = () => {
@@ -154,14 +147,13 @@ const Main: FunctionComponent = () => {
   const handleMouseMove = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-    if (mouseOnCnv && changes.images) {
+    if (mouseOnCnv) {
       const parentRect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - parentRect.left;
       const y = e.clientY - parentRect.top;
       setMousePosition({ x: x, y: y });
       canvasUpd({
         src: selectedImg,
-        mousePos: { x: x, y: y },
         ...changes,
       });
     }
@@ -181,7 +173,7 @@ const Main: FunctionComponent = () => {
   const handleUpload = (event: ChangeEvent<HTMLInputElement>) => {
     uploadImage(event).then((file) => {
       setSelectedImg && file && setSelectedImg(file);
-      canvasUpd({ src: file, zoom: 0, mousePos: mousePosition });
+      canvasUpd({ src: file, zoom: 0 });
     });
   };
 
@@ -191,7 +183,6 @@ const Main: FunctionComponent = () => {
         ...changes,
         src: selectedImg,
         [key]: value,
-        mousePos: mousePosition,
       });
     };
 
@@ -217,30 +208,18 @@ const Main: FunctionComponent = () => {
     if (type === "undo") {
       const [data, action] = undo();
       action();
-      canvasUpd({
-        src: selectedImg,
-        ...changes,
-        ...data,
-        mousePos: mousePosition,
-      });
+      canvasUpd({ src: selectedImg, ...changes, ...data });
     } else if (type === "redo") {
       const [data, action] = redo();
       action();
-      canvasUpd({
-        src: selectedImg,
-        ...changes,
-        ...data,
-        mousePos: mousePosition,
-      });
+      canvasUpd({ src: selectedImg, ...changes, ...data });
     } else if (type === "add" && file) {
-      setMousePosition({ x: 0, y: 0 });
-
       setChanges((prev) => {
         const data = {
           ...prev,
           images: file,
         };
-        canvasUpd({ src: selectedImg, ...data, mousePos: { x: 0, y: 0 } });
+        canvasUpd({ src: selectedImg, ...data });
         return data;
       });
     }
@@ -286,9 +265,7 @@ const Main: FunctionComponent = () => {
               </div>
             ) : (
               <canvas
-                className={`${
-                  mouseOnCnv && changes.images ? "cursor-grabbing" : ""
-                }`}
+                className={`${mouseOnCnv ? "cursor-grabbing" : ""}`}
                 ref={canvasRef}
                 onMouseUp={() => setMouseOnCnv(false)}
                 onMouseMove={(e) => mouseOnCnv && handleMouseMove(e)}
