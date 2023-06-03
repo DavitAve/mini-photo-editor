@@ -19,6 +19,11 @@ import useUploadFile from "../hooks/useUploadFile";
 
 const canvasSize = 630;
 
+interface IMousePos {
+  x: number;
+  y: number;
+}
+
 const Main: FunctionComponent = () => {
   const context = useContext(Context);
   const { selectedImg, setSelectedImg } = context || {};
@@ -34,22 +39,23 @@ const Main: FunctionComponent = () => {
     grayscale: 0,
     invert: 0,
     sepia: 0,
-    images: [],
+    images: null,
   });
   const { action: uploadImage } = useUploadFile();
   const [fileName, setFileName] = useState<string>("New image");
+  const [mouseOnCnv, setMouseOnCnv] = useState<boolean>(false);
+  const [mousePosition, setMousePosition] = useState<IMousePos>({
+    x: 0,
+    y: 0,
+  });
 
   const canvasUpd = ({ ...args }) => {
     const img = new Image();
     img.src = args.src?.toString() || "";
-    const images: any[] = [];
-
-    args.images?.forEach((item: any) => {
-      const img = new Image();
-      img.src = item.toString() || "";
-      images.push(img);
-    });
-
+    const minImg = new Image();
+    minImg.src = args.images;
+    const minImgCond =
+      !minImg.src.includes("undefined") && !minImg.src.includes("null");
     const animateSizeChange = () => {
       const canvas = canvasRef.current;
       const context = canvas?.getContext("2d");
@@ -72,7 +78,6 @@ const Main: FunctionComponent = () => {
       }
       const x = ((canvas?.width || 0) - (w * args.zoom) / 100 - w) / 2;
       const y = ((canvas?.height || 0) - (h * args.zoom) / 100 - h) / 2;
-
       if (canvas) {
         context?.translate(canvas.width / 2, canvas.height / 2);
         context?.rotate(args.rotate * (Math.PI / 180));
@@ -90,14 +95,14 @@ const Main: FunctionComponent = () => {
         })`;
       }
       context?.drawImage(img, x, y, zoomedW, zoomedH);
-      if (images.length) {
-        images.forEach((img, index) => {
-          context?.drawImage(img, index * 100, 0, 100, 100);
-        });
-      }
+      minImgCond &&
+        context?.drawImage(minImg, mousePosition.x, mousePosition.y, 100, 100);
     };
 
-    img.onload = () => animateSizeChange();
+    img.onload = () => {
+      if (minImgCond) minImg.onload = () => animateSizeChange();
+      else animateSizeChange();
+    };
   };
 
   const mainAction = (
@@ -137,6 +142,21 @@ const Main: FunctionComponent = () => {
       }
       return { w: canvasSize, h: canvasSize };
     } else return { w: w, h: h };
+  };
+
+  const handleMouseMove = (
+    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => {
+    if (mouseOnCnv) {
+      const parentRect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - parentRect.left;
+      const y = e.clientY - parentRect.top;
+      setMousePosition({ x: x, y: y });
+      canvasUpd({
+        src: selectedImg,
+        ...changes,
+      });
+    }
   };
 
   const handleDownload = () => {
@@ -183,6 +203,7 @@ const Main: FunctionComponent = () => {
       handleRest("redo");
     }
   };
+
   const handleRest = (type: string, file?: FileT) => {
     if (type === "undo") {
       const [data, action] = undo();
@@ -196,7 +217,7 @@ const Main: FunctionComponent = () => {
       setChanges((prev) => {
         const data = {
           ...prev,
-          images: [...prev.images, file] as ArrayBuffer[],
+          images: file,
         };
         canvasUpd({ src: selectedImg, ...data });
         return data;
@@ -229,7 +250,7 @@ const Main: FunctionComponent = () => {
               className="bg-[#1b1b1b] flex-auto relative z-10 p-4"
             />
           </div>
-          <div className="w-[640px] h-[640px] flex items-center justify-center">
+          <div className="w-[640px] h-[640px] flex items-center justify-center relative">
             {!selectedImg ? (
               <div
                 className="flex flex-col justify-center cursor-pointer"
@@ -243,7 +264,13 @@ const Main: FunctionComponent = () => {
                 <div className="text-center">Choose image</div>
               </div>
             ) : (
-              <canvas ref={canvasRef} />
+              <canvas
+                className={`${mouseOnCnv ? "cursor-grabbing" : ""}`}
+                ref={canvasRef}
+                onMouseUp={() => setMouseOnCnv(false)}
+                onMouseMove={(e) => mouseOnCnv && handleMouseMove(e)}
+                onMouseDown={() => setMouseOnCnv(true)}
+              />
             )}
           </div>
         </div>

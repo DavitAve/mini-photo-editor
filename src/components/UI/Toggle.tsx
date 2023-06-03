@@ -35,14 +35,14 @@ const Toggle: FunctionComponent<IToggleProps> = ({
             onChange && onChange(!active);
           }
         }}
-        className={`w-12 h-6 tr-2 rounded-3xl cursor-pointer  relative ${
+        className={`w-12 h-6 tr-2 rounded-3xl relative ${
           active ? "bg-[#0F4C75]" : "bg-[#313131]"
-        } ${disabled ? "cursor-auto" : ""}`}
+        } ${disabled ? "cursor-auto" : "cursor-pointer"}`}
       >
         <div
-          className={`tr-2 absolute top-[50%] translate-y-[-50%] w-5 h-5 rounded-[50%] bg-[#fff] ${
+          className={`tr-2 absolute top-[50%] translate-y-[-50%] w-5 h-5 rounded-[50%] ${
             active ? "left-6" : "left-[4px]"
-          } ${disabled ? "bg-[#666666]" : ""}`}
+          } ${disabled ? "bg-[#666666]" : "bg-[#fff]"}`}
         ></div>
       </button>
     </label>
