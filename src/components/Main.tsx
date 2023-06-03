@@ -19,6 +19,7 @@ import useUploadFile from "../hooks/useUploadFile";
 import Dialog from "./UI/Dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHand } from "@fortawesome/free-solid-svg-icons";
+import TopPanel from "./TopPanel";
 
 const canvasSize = 630;
 
@@ -31,6 +32,7 @@ const Main: FunctionComponent = () => {
   const context = useContext(Context);
   const { selectedImg, setSelectedImg } = context || {};
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [fileType, setFileType] = useState<string>("png");
   const fileRef = useRef<HTMLInputElement>(null);
   const [changes, setChanges, undo, redo] = useHistoryState<IChanges>({
     zoom: 0,
@@ -175,11 +177,13 @@ const Main: FunctionComponent = () => {
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
-    const image = canvas?.toDataURL("image/png");
+    const image = canvas?.toDataURL(`image/${fileType}`);
 
     const anchor = document.createElement("a");
     anchor.href = image || "";
-    anchor.download = `${fileName || "image-" + Date.now()}.png`;
+    anchor.download = `${fileName || "image-" + Date.now()}.${
+      fileType || "png"
+    }`;
 
     anchor.click();
   };
@@ -243,6 +247,11 @@ const Main: FunctionComponent = () => {
     }
   };
 
+  const handleFileSettings = (key: string, value: string) => {
+    if (key === "name") setFileName(value);
+    else setFileType(value);
+  };
+
   useLayoutEffect(() => {
     window.onkeydown = (e) => {
       handleKeyDown(e);
@@ -259,15 +268,7 @@ const Main: FunctionComponent = () => {
           <div className="flex justify-end">
             <MainUnRe onAction={handleRest} minImg={changes.images} />
           </div>
-          <div className="flex items-center">
-            <span>File name: </span>
-            <input
-              type="text"
-              value={fileName}
-              onChange={(e) => setFileName(e.target.value)}
-              className="bg-[#1b1b1b] flex-auto relative z-10 p-4 text-white"
-            />
-          </div>
+          <TopPanel fileName={fileName} onAction={handleFileSettings} />
           <div className="w-[640px] h-[640px] flex items-center justify-center relative">
             {!selectedImg ? (
               <div

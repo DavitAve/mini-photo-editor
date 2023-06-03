@@ -12,3 +12,8 @@ export interface IChanges {
 }
 
 export type FileT = string | ArrayBuffer | null;
+
+export interface ISelectOption {
+  label: string;
+  value: string;
+}
